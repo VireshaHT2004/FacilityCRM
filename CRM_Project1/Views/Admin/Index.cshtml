@@ -1,0 +1,92 @@
+@model IEnumerable<CRM_Project.Models.Building>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i>Admin Dashboard</h3>
+            <p class="text-muted mb-0">Manage all buildings and owners</p>
+        </div>
+        <a href="/Admin/CreateBuilding" class="btn btn-primary">
+            <i class="bi bi-building-add me-1"></i> Add Building
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card border-primary p-3">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="text-muted small">Total Buildings</div>
+                    <div class="fs-2 fw-bold text-primary">@Model.Count()</div>
+                </div>
+                <i class="bi bi-buildings text-primary fs-1 opacity-25"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Buildings</h6>
+            <form method="get" action="/Admin/Index" class="d-flex gap-2">
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control form-control-sm" placeholder="Search buildings..." style="width:220px;" />
+                <button type="submit" class="btn btn-sm btn-outline-primary">Search</button>
+                @if (!string.IsNullOrEmpty(ViewBag.Search))
+                {
+                    <a href="/Admin/Index" class="btn btn-sm btn-outline-secondary">Clear</a>
+                }
+            </form>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Building Name</th>
+                        <th>Type</th>
+                        <th>Location</th>
+                        <th>Floors</th>
+                        <th>Owner</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        <tr>
+                            <td><strong>@b.BuildingName</strong></td>
+                            <td><span class="badge bg-light text-dark">@b.BuildingType</span></td>
+                            <td>@b.City, @b.State</td>
+                            <td>@b.NumberOfFloors</td>
+                            <td>@b.OwnerFirstName @b.OwnerLastName</td>
+                            <td>@b.CreatedDate.ToString("MM/dd/yyyy")</td>
+                            <td>
+                                <a href="/Admin/EditBuilding/@b.BuildingId" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="/Admin/DeleteBuilding" class="d-inline"
+                                      onsubmit="return confirm('Delete this building?')">
+                                    <input type="hidden" name="id" value="@b.BuildingId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted py-4">No buildings found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

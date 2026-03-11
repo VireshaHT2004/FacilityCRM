@@ -1,0 +1,85 @@
+@model CRM_Project.Models.Building
+@{
+    ViewData["Title"] = "Edit Building";
+}
+
+<div class="page-header">
+    <h3><i class="bi bi-pencil-square text-warning me-2"></i>Edit Building</h3>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">Edit: @Model.BuildingName</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/Admin/EditBuilding">
+                    <input asp-for="BuildingId" type="hidden" />
+                    <input asp-for="CreatedDate" type="hidden" />
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Building Name</label>
+                            <input asp-for="BuildingName" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Type</label>
+                            <input asp-for="BuildingType" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Square Footage</label>
+                            <input asp-for="SquareFootage" class="form-control" type="number" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Number of Floors</label>
+                            <input asp-for="NumberOfFloors" class="form-control" type="number" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Street Address</label>
+                            <input asp-for="StreetAddress" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <input asp-for="City" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">State</label>
+                            <input asp-for="State" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Postal Code</label>
+                            <input asp-for="PostalCode" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Country</label>
+                            <input asp-for="Country" class="form-control" />
+                        </div>
+                        <hr class="my-2" />
+                        <div class="col-md-6">
+                            <label class="form-label">Owner First Name</label>
+                            <input asp-for="OwnerFirstName" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Owner Last Name</label>
+                            <input asp-for="OwnerLastName" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Owner Email</label>
+                            <input asp-for="OwnerEmail" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Owner Phone</label>
+                            <input asp-for="OwnerPhoneNumber" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-warning px-4">
+                            <i class="bi bi-save me-1"></i>Save Changes
+                        </button>
+                        <a href="/Admin/Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,95 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Login";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FacilityCRM - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            width: 420px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.4);
+            border: none;
+        }
+        .login-card .card-header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 16px 16px 0 0 !important;
+            padding: 2rem;
+            text-align: center;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: .65rem 1rem;
+        }
+        .btn-login {
+            border-radius: 8px;
+            padding: .7rem;
+            font-weight: 600;
+            letter-spacing: .5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card login-card">
+        <div class="card-header">
+            <i class="bi bi-buildings-fill text-white" style="font-size:2.5rem;"></i>
+            <h4 class="text-white mt-2 mb-0">FacilityCRM</h4>
+            <p class="text-white-50 small mb-0">Facility Management System</p>
+        </div>
+        <div class="card-body p-4">
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger alert-sm py-2">
+                    <i class="bi bi-exclamation-triangle me-1"></i> @ViewBag.Error
+                </div>
+            }
+            <form method="post" action="/Account/Login">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted small">ROLE</label>
+                    <select name="role" class="form-select" required>
+                        <option value="">-- Select Role --</option>
+                        <option value="Admin">Admin</option>
+                        <option value="BuildingOwner">Building Owner</option>
+                        <option value="Employee">Employee</option>
+                        <option value="Customer">Customer</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted small">USERNAME</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" class="form-control" placeholder="Enter username" required />
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold text-muted small">PASSWORD</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" class="form-control" placeholder="Enter password" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 btn-login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </button>
+            </form>
+            <div class="text-center mt-3">
+                <small class="text-muted">Admin: username <code>q</code> / password <code>q</code></small>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

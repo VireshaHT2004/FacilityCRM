@@ -1,0 +1,120 @@
+@model IEnumerable<CRM_Project.Models.CustomerServiceRequest>
+@{
+    ViewData["Title"] = "Service Requests";
+}
+
+<div class="page-header">
+    <h3><i class="bi bi-clipboard-check text-warning me-2"></i>Service Requests</h3>
+    <p class="text-muted">Review and assign employees to service requests</p>
+</div>
+
+<div class="row g-2 mb-3">
+    @{
+        var statuses = new[] { "All", "Pending", "Assigned", "Accepted", "Travelling", "WorkStarted", "Delayed", "Completed", "Rejected" };
+    }
+    @foreach (var s in statuses)
+    {
+        <div class="col-auto">
+            <a href="#" class="btn btn-sm btn-outline-secondary filter-btn" data-status="@s">@s</a>
+        </div>
+    }
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="requestsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Customer</th>
+                        <th>Building / Floor</th>
+                        <th>Service</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Assigned To</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr data-status="@r.Status">
+                            <td class="text-muted">#@r.RequestId</td>
+                            <td>@r.Customer?.FirstName @r.Customer?.LastName</td>
+                            <td>@r.Building?.BuildingName / Floor @r.FloorNumber</td>
+                            <td>@r.Service?.ServiceName</td>
+                            <td><span class="priority-@r.Priority">@r.Priority</span></td>
+                            <td><span class="badge badge-status-@r.Status text-white">@r.Status</span></td>
+                            <td>@r.RequestDate.ToString("MM/dd/yy")</td>
+                            <td>
+                                @{
+                                    var latestAssignment = r.Assignments?.OrderByDescending(a => a.AssignedDate).FirstOrDefault();
+                                }
+                                @if (latestAssignment != null)
+                                {
+                                    <span>@latestAssignment.Employee?.FirstName</span>
+                                    <span class="badge bg-secondary ms-1">@latestAssignment.EmployeeStatus</span>
+                                }
+                                else { <span class="text-muted">-</span> }
+                            </td>
+                            <td>
+                                @if (r.Status == "Pending" || r.Status == "Rejected")
+                                {
+                                    <a href="/OwnerService/AssignService/@r.RequestId" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-person-check"></i> Assign
+                                    </a>
+                                }
+
+                                @if (r.WorkUpdates != null && r.WorkUpdates.Any())
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#updates-@r.RequestId">Updates</button>
+                                }
+                            </td>
+                        </tr>
+                        <tr class="collapse" id="updates-@r.RequestId">
+                            <td colspan="9">
+                                <div class="p-3">
+                                    <h6 class="small mb-2">Update History</h6>
+                                    <ul class="list-group list-group-flush">
+                                        @foreach (var u in r.WorkUpdates.OrderByDescending(w => w.UpdateTime))
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong class="me-2">@u.WorkStatus</strong>
+                                                    <div class="small text-muted">@u.Notes</div>
+                                                </div>
+                                                <small class="text-muted">@u.UpdateTime.ToString("MM/dd HH:mm")</small>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="9" class="text-center py-4 text-muted">No service requests found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+            this.classList.add('active', 'btn-primary');
+            const status = this.dataset.status;
+            document.querySelectorAll('#requestsTable tbody tr[data-status]').forEach(row => {
+                row.style.display = (status === 'All' || row.dataset.status === status) ? '' : 'none';
+            });
+        });
+    });
+</script>
+}

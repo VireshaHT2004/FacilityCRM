@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CRM Facility Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <style>
+        body { background-color: #f4f6f9; }
+        .navbar-brand { font-weight: 700; letter-spacing: 1px; }
+        .sidebar { min-height: calc(100vh - 56px); background: #1e293b; }
+        .sidebar .nav-link { color: #94a3b8; padding: 10px 20px; border-radius: 6px; margin: 2px 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #334155; color: #fff; }
+        .sidebar .nav-link i { margin-right: 8px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+        .card-header { border-radius: 12px 12px 0 0 !important; }
+        .stat-card { border-left: 4px solid; }
+        .badge-status-Pending { background-color: #f59e0b; }
+        .badge-status-Assigned { background-color: #3b82f6; }
+        .badge-status-Accepted { background-color: #10b981; }
+        .badge-status-Rejected { background-color: #ef4444; }
+        .badge-status-Travelling { background-color: #8b5cf6; }
+        .badge-status-WorkStarted { background-color: #06b6d4; }
+        .badge-status-Delayed { background-color: #f97316; }
+        .badge-status-Completed { background-color: #22c55e; }
+        .table th { font-size: .8rem; text-transform: uppercase; letter-spacing: .5px; color: #64748b; }
+        .priority-High { color: #ef4444; font-weight: 600; }
+        .priority-Normal { color: #3b82f6; }
+        .priority-Low { color: #22c55e; }
+        .page-header { padding: 1.5rem 0; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+
+@if (Context.Session.GetString("Username") != null)
+{
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-buildings-fill text-primary"></i> FacilityCRM</a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <span class="text-white-50 small">
+                    <i class="bi bi-person-circle"></i>
+                    @Context.Session.GetString("Username")
+                    <span class="badge bg-secondary ms-1">@Context.Session.GetString("Role")</span>
+                </span>
+                <a href="/Account/Logout" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar py-3">
+                @{
+                    var role = Context.Session.GetString("Role");
+                }
+                @if (role == "Admin")
+                {
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/Admin/Index"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/Admin/CreateBuilding"><i class="bi bi-building-add"></i> Add Building</a></li>
+                    </ul>
+                }
+                @if (role == "BuildingOwner")
+                {
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/BuildingOwner/Index"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/BuildingOwner/CreateCustomer"><i class="bi bi-person-plus"></i> Add Customer</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/BuildingOwner/CreateEmployee"><i class="bi bi-person-badge"></i> Add Employee</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/BuildingOwner/Customers"><i class="bi bi-people"></i> Customers</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/BuildingOwner/Employees"><i class="bi bi-person-workspace"></i> Employees</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/OwnerService/ServiceRequests"><i class="bi bi-clipboard-check"></i> Service Requests</a></li>
+                    </ul>
+                }
+                @if (role == "Customer")
+                {
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/Customer/Index"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/ServiceRequest/CreateServiceRequest"><i class="bi bi-plus-circle"></i> New Request</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/ServiceRequest/MyServiceRequests"><i class="bi bi-list-check"></i> My Requests</a></li>
+                    </ul>
+                }
+                @if (role == "Employee")
+                {
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/EmployeeControllerDetails/Index"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/EmployeeService/AssignedServices"><i class="bi bi-tools"></i> Assigned Jobs</a></li>
+                    </ul>
+                }
+            </div>
+            <div class="col-md-10 py-4 px-4">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @RenderBody()
+}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

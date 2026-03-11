@@ -1,0 +1,63 @@
+@{
+    ViewData["Title"] = "Register Employee";
+}
+
+<div class="page-header">
+    <h3><i class="bi bi-person-badge text-info me-2"></i>Register Employee</h3>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">Employee Registration Form</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/BuildingOwner/CreateEmployee">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Username *</label>
+                            <input name="Username" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Password *</label>
+                            <input name="Password" class="form-control" type="password" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">First Name *</label>
+                            <input name="FirstName" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name *</label>
+                            <input name="LastName" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input name="Email" class="form-control" type="email" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input name="Phone" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Assigned Building *</label>
+                            <select name="BuildingId" class="form-select" required>
+                                <option value="">-- Select Building --</option>
+                                @foreach (var item in (ViewBag.Buildings as Microsoft.AspNetCore.Mvc.Rendering.SelectList ?? new Microsoft.AspNetCore.Mvc.Rendering.SelectList(new List<object>())))
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-info text-white px-4">
+                            <i class="bi bi-person-check me-1"></i>Register Employee
+                        </button>
+                        <a href="/BuildingOwner/Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
