@@ -1,11 +1,14 @@
 using CRM_Project.Data;
 using CRM_Project.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CRM_Project.Controllers
 {
+    [Authorize(Roles = "BuildingOwner")]
     public class OwnerServiceController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,12 +18,9 @@ namespace CRM_Project.Controllers
             _context = context;
         }
 
-        private bool IsOwner() => HttpContext.Session.GetString("Role") == "BuildingOwner";
-
+        // ---------------- VIEW ALL SERVICE REQUESTS ----------------
         public async Task<IActionResult> ServiceRequests()
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
-
             var requests = await _context.CustomerServiceRequests
                 .Include(r => r.Customer)
                 .Include(r => r.Service)
@@ -34,11 +34,10 @@ namespace CRM_Project.Controllers
             return View(requests);
         }
 
+        // ---------------- ASSIGN SERVICE PAGE ----------------
         [HttpGet]
         public async Task<IActionResult> AssignService(int id)
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
-
             var request = await _context.CustomerServiceRequests
                 .Include(r => r.Customer)
                 .Include(r => r.Service)
@@ -46,33 +45,42 @@ namespace CRM_Project.Controllers
                 .Include(r => r.WorkUpdates)
                 .FirstOrDefaultAsync(r => r.RequestId == id);
 
-            if (request == null) return NotFound();
+            if (request == null)
+                return NotFound();
 
             ViewBag.Request = request;
+
             ViewBag.Employees = new SelectList(
                 await _context.Employees
                     .Where(e => e.BuildingId == request.BuildingId)
                     .ToListAsync(),
                 "EmployeeId",
-                "FirstName");
+                "FirstName"
+            );
 
             return View();
         }
 
+        // ---------------- ASSIGN EMPLOYEE TO SERVICE ----------------
         [HttpPost]
         public async Task<IActionResult> AssignService(int requestId, int employeeId, decimal? estimatedCost, string? estimatedTime)
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
+            // Get owner id from JWT token
+            var userIdClaim = User.FindFirst("UserId");
+            if (userIdClaim == null)
+                return RedirectToAction("Login", "Account");
 
-            int ownerId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            int ownerId = int.Parse(userIdClaim.Value);
 
             var request = await _context.CustomerServiceRequests.FindAsync(requestId);
-            if (request == null) return NotFound();
+            if (request == null)
+                return NotFound();
 
             // Update request
             request.Status = "Assigned";
             request.EstimatedCost = estimatedCost;
             request.EstimatedTime = estimatedTime;
+
             _context.CustomerServiceRequests.Update(request);
 
             // Create assignment
@@ -84,11 +92,13 @@ namespace CRM_Project.Controllers
                 AssignedDate = DateTime.UtcNow,
                 EmployeeStatus = "Pending"
             };
+
             _context.ServiceAssignments.Add(assignment);
 
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Employee assigned successfully.";
+
             return RedirectToAction("ServiceRequests");
         }
     }

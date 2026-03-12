@@ -8,107 +8,160 @@
 
 @if (ViewBag.Error != null)
 {
-    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-1"></i>@ViewBag.Error</div>
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-1"></i>@ViewBag.Error
+    </div>
 }
 
 <div class="row">
     <div class="col-md-7">
         <div class="card">
+
             <div class="card-header bg-success text-white">
                 <h6 class="mb-0">Customer Registration Form</h6>
             </div>
+
             <div class="card-body">
-                <form method="post" action="/BuildingOwner/CreateCustomer">
+
+                <form asp-controller="BuildingOwner" asp-action="CreateCustomer" method="post">
+
                     <h6 class="text-muted mb-3">Login Credentials</h6>
+
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Username *</label>
                             <input name="username" class="form-control" required />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Password *</label>
-                            <input name="password" class="form-control" type="password" required />
+                            <input name="password" type="password" class="form-control" required />
                         </div>
                     </div>
 
+
                     <hr class="my-3" />
+
                     <h6 class="text-muted mb-3">Personal Information</h6>
+
                     <div class="row g-3">
+
                         <div class="col-md-6">
                             <label class="form-label">First Name *</label>
                             <input name="FirstName" class="form-control" required />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Last Name *</label>
                             <input name="LastName" class="form-control" required />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
-                            <input name="Email" class="form-control" type="email" />
+                            <input name="Email" type="email" class="form-control" />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Phone</label>
                             <input name="PhoneNumber" class="form-control" />
                         </div>
+
+                        <!-- IMPORTANT FIX FOR TITLE -->
                         <div class="col-12">
-                            <label class="form-label">Title / Company</label>
-                            <input name="Title" class="form-control" />
+                            <label class="form-label">Title / Company *</label>
+                            <input name="Title" class="form-control" required placeholder="Mr / Mrs / Company Name" />
                         </div>
+
                     </div>
 
+
                     <hr class="my-3" />
+
                     <h6 class="text-muted mb-3">Building & Floor Assignment</h6>
+
                     <div class="row g-3">
+
                         <div class="col-md-6">
                             <label class="form-label">Building *</label>
+
                             <select name="buildingId" id="buildingSelect" class="form-select" required>
                                 <option value="">-- Select Building --</option>
-                                @foreach (var item in (ViewBag.Buildings as Microsoft.AspNetCore.Mvc.Rendering.SelectList ?? new Microsoft.AspNetCore.Mvc.Rendering.SelectList(new List<object>())))
+
+                                @foreach (var item in (ViewBag.Buildings as SelectList))
                                 {
                                     <option value="@item.Value">@item.Text</option>
                                 }
+
                             </select>
                         </div>
+
+
                         <div class="col-md-6">
                             <label class="form-label">Floor Number *</label>
+
                             <select name="floorNumber" id="floorSelect" class="form-select" required>
                                 <option value="">-- Select Building First --</option>
                             </select>
                         </div>
+
                     </div>
 
+
                     <div class="d-flex gap-2 mt-4">
+
                         <button type="submit" class="btn btn-success px-4">
-                            <i class="bi bi-person-check me-1"></i>Register Customer
+                            <i class="bi bi-person-check me-1"></i>
+                            Register Customer
                         </button>
-                        <a href="/BuildingOwner/Index" class="btn btn-outline-secondary">Cancel</a>
+
+                        <a asp-controller="BuildingOwner" asp-action="Index" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+
                     </div>
+
                 </form>
+
             </div>
+
         </div>
     </div>
 </div>
 
+
 @section Scripts {
-<script>
-    document.getElementById('buildingSelect').addEventListener('change', function () {
-        const buildingId = this.value;
-        const floorSelect = document.getElementById('floorSelect');
-        floorSelect.innerHTML = '<option>Loading...</option>';
 
-        if (!buildingId) {
-            floorSelect.innerHTML = '<option>-- Select Building First --</option>';
-            return;
-        }
+    <script>
 
-        fetch(`/BuildingOwner/GetAvailableFloors?buildingId=${buildingId}`)
-            .then(r => r.json())
-            .then(floors => {
-                floorSelect.innerHTML = floors.length === 0
-                    ? '<option value="">No floors available</option>'
-                    : '<option value="">-- Select Floor --</option>' +
-                      floors.map(f => `<option value="${f}">Floor ${f}</option>`).join('');
-            });
-    });
-</script>
+        document.getElementById('buildingSelect').addEventListener('change', function () {
+
+            const buildingId = this.value;
+            const floorSelect = document.getElementById('floorSelect');
+
+            floorSelect.innerHTML = '<option>Loading...</option>';
+
+            if (!buildingId) {
+                floorSelect.innerHTML = '<option value="">-- Select Building First --</option>';
+                return;
+            }
+
+            fetch(`/BuildingOwner/GetAvailableFloors?buildingId=${buildingId}`)
+                .then(r => r.json())
+                .then(floors => {
+
+                    if (floors.length === 0) {
+                        floorSelect.innerHTML = '<option value="">No floors available</option>';
+                        return;
+                    }
+
+                    floorSelect.innerHTML =
+                        '<option value="">-- Select Floor --</option>' +
+                        floors.map(f => `<option value="${f}">Floor ${f}</option>`).join('');
+
+                });
+
+        });
+
+    </script>
+
 }

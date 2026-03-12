@@ -1,4 +1,5 @@
 using CRM_Project.Data;
+using CRM_Project.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,20 +8,22 @@ namespace CRM_Project.Controllers
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly JwtService _jwtService;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, JwtService jwtService)
         {
             _context = context;
+            _jwtService = jwtService;
         }
 
+        // ---------------- LOGIN PAGE ----------------
         [HttpGet]
         public IActionResult Login()
         {
-            if (HttpContext.Session.GetString("Username") != null)
-                return RedirectToDashboard(HttpContext.Session.GetString("Role")!);
             return View();
         }
 
+        // ---------------- LOGIN LOGIC ----------------
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password, string role)
         {
@@ -30,61 +33,80 @@ namespace CRM_Project.Controllers
                 return View();
             }
 
-            // Admin hardcoded check (kept for compatibility)
+            // ---------------- ADMIN LOGIN ----------------
             if (role == "Admin")
             {
                 if (username == "q" && password == "q")
                 {
-                    HttpContext.Session.SetString("Username", username);
-                    HttpContext.Session.SetString("Role", "Admin");
-                    HttpContext.Session.SetInt32("UserId", 0);
+                    var adminUser = new Models.User
+                    {
+                        Id = 0,
+                        Username = "q",
+                        Role = "Admin"
+                    };
+
+                    var token = _jwtService.GenerateToken(adminUser);
+
+                    Response.Cookies.Append("jwt", token, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = false,
+                        SameSite = SameSiteMode.Strict
+                    });
+
                     return RedirectToAction("Index", "Admin");
                 }
+
                 ViewBag.Error = "Invalid admin credentials.";
                 return View();
             }
 
-            // Primary: look up in Users table for any role created
+            // ---------------- DATABASE USER LOGIN ----------------
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username && u.Password == password && u.Role == role);
+                .FirstOrDefaultAsync(u => u.Username == username && u.Role == role);
 
             if (user != null)
             {
-                HttpContext.Session.SetString("Username", username);
-                HttpContext.Session.SetString("Role", user.Role);
-
-                if (user.Role == "Employee")
+                // Verify hashed password
+                if (BCrypt.Net.BCrypt.Verify(password, user.Password))
                 {
-                    // Map to EmployeeId for employee-specific dashboards
-                    var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Username == username);
-                    if (employee != null)
-                    {
-                        HttpContext.Session.SetInt32("UserId", employee.EmployeeId);
-                    }
-                    else
-                    {
-                        // Fallback to user id if employee record missing
-                        HttpContext.Session.SetInt32("UserId", user.Id);
-                    }
-                }
-                else
-                {
-                    HttpContext.Session.SetInt32("UserId", user.Id);
-                }
+                    var token = _jwtService.GenerateToken(user);
 
-                return RedirectToDashboard(user.Role);
+                    Response.Cookies.Append("jwt", token, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = false,
+                        SameSite = SameSiteMode.Strict
+                    });
+
+                    return RedirectToDashboard(user.Role);
+                }
             }
 
-            // Fallback: legacy employee records stored only in Employees table
+            // ---------------- FALLBACK EMPLOYEE LOGIN ----------------
             if (role == "Employee")
             {
                 var employee = await _context.Employees
-                    .FirstOrDefaultAsync(e => e.Username == username && e.Password == password);
-                if (employee != null)
+                    .FirstOrDefaultAsync(e => e.Username == username);
+
+                if (employee != null && BCrypt.Net.BCrypt.Verify(password, employee.Password))
                 {
-                    HttpContext.Session.SetString("Username", username);
-                    HttpContext.Session.SetString("Role", "Employee");
-                    HttpContext.Session.SetInt32("UserId", employee.EmployeeId);
+                    var empUser = new Models.User
+                    {
+                        Id = employee.EmployeeId,
+                        Username = employee.Username,
+                        Role = "Employee"
+                    };
+
+                    var token = _jwtService.GenerateToken(empUser);
+
+                    Response.Cookies.Append("jwt", token, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = false,
+                        SameSite = SameSiteMode.Strict
+                    });
+
                     return RedirectToAction("Index", "EmployeeControllerDetails");
                 }
             }
@@ -93,12 +115,14 @@ namespace CRM_Project.Controllers
             return View();
         }
 
+        // ---------------- LOGOUT ----------------
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear();
+            Response.Cookies.Delete("jwt");
             return RedirectToAction("Login");
         }
 
+        // ---------------- DASHBOARD REDIRECTION ----------------
         private IActionResult RedirectToDashboard(string role) => role switch
         {
             "Admin" => RedirectToAction("Index", "Admin"),
