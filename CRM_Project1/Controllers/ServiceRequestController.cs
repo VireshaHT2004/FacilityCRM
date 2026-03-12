@@ -1,11 +1,14 @@
 using CRM_Project.Data;
 using CRM_Project.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CRM_Project.Controllers
 {
+    [Authorize(Roles = "Customer")]
     public class ServiceRequestController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,26 +18,25 @@ namespace CRM_Project.Controllers
             _context = context;
         }
 
-        private bool IsCustomer() => HttpContext.Session.GetString("Role") == "Customer";
-
+        // ---------------- CREATE SERVICE REQUEST PAGE ----------------
         [HttpGet]
         public async Task<IActionResult> CreateServiceRequest()
         {
-            if (!IsCustomer()) return RedirectToAction("Login", "Account");
-
             ViewBag.Services = new SelectList(
-                await _context.Services.Where(s => s.IsActive).ToListAsync(),
-                "ServiceId", "ServiceName");
+                await _context.Services
+                    .Where(s => s.IsActive)
+                    .ToListAsync(),
+                "ServiceId",
+                "ServiceName");
 
             return View();
         }
 
+        // ---------------- CREATE SERVICE REQUEST ----------------
         [HttpPost]
         public async Task<IActionResult> CreateServiceRequest(int serviceId, string priority, string details)
         {
-            if (!IsCustomer()) return RedirectToAction("Login", "Account");
-
-            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            int userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
             var customer = await _context.Customers
                 .Include(c => c.FloorAssignment)
@@ -62,17 +64,20 @@ namespace CRM_Project.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Service request submitted successfully.";
+
             return RedirectToAction("MyServiceRequests");
         }
 
+        // ---------------- VIEW CUSTOMER REQUESTS ----------------
         public async Task<IActionResult> MyServiceRequests()
         {
-            if (!IsCustomer()) return RedirectToAction("Login", "Account");
+            int userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
-            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
 
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-            if (customer == null) return RedirectToAction("Login", "Account");
+            if (customer == null)
+                return RedirectToAction("Login", "Account");
 
             var requests = await _context.CustomerServiceRequests
                 .Include(r => r.Service)

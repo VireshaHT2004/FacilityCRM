@@ -1,11 +1,13 @@
 using CRM_Project.Data;
 using CRM_Project.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace CRM_Project.Controllers
 {
+    [Authorize(Roles = "BuildingOwner")]
     public class BuildingOwnerController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,12 +17,9 @@ namespace CRM_Project.Controllers
             _context = context;
         }
 
-        private bool IsOwner() => HttpContext.Session.GetString("Role") == "BuildingOwner";
-
+        // ---------------- DASHBOARD ----------------
         public async Task<IActionResult> Index()
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
-
             var customers = await _context.Customers
                 .Include(c => c.Building)
                 .Include(c => c.FloorAssignment)
@@ -42,26 +41,29 @@ namespace CRM_Project.Controllers
             ViewBag.Customers = customers;
             ViewBag.Employees = employees;
             ViewBag.RecentRequests = requests;
+
             return View();
         }
 
-        // ─── Create Customer ───────────────────────────────────────────────
+        // ---------------- CREATE CUSTOMER PAGE ----------------
         [HttpGet]
         public async Task<IActionResult> CreateCustomer()
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
-            ViewBag.Buildings = new SelectList(await _context.Buildings.ToListAsync(), "BuildingId", "BuildingName");
+            ViewBag.Buildings = new SelectList(
+                await _context.Buildings.ToListAsync(),
+                "BuildingId",
+                "BuildingName");
+
             return View();
         }
 
+        // ---------------- CREATE CUSTOMER ----------------
         [HttpPost]
         public async Task<IActionResult> CreateCustomer(Customer customer, string username, string password, int buildingId, int floorNumber)
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
-
-            // Check floor availability
             bool floorTaken = await _context.BuildingFloorCustomers
                 .AnyAsync(f => f.BuildingId == buildingId && f.FloorNumber == floorNumber);
+
             if (floorTaken)
             {
                 ViewBag.Error = "This floor is already assigned to another customer.";
@@ -69,8 +71,20 @@ namespace CRM_Project.Controllers
                 return View(customer);
             }
 
-            // Create user account
-            var user = new User { Username = username, Password = password, Role = "Customer" };
+            // Ensure Title is never NULL
+            if (string.IsNullOrEmpty(customer.Title))
+            {
+                customer.Title = "Mr";
+            }
+
+            // Create login user
+            var user = new User
+            {
+                Username = username,
+                Password = BCrypt.Net.BCrypt.HashPassword(password),
+                Role = "Customer"
+            };
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
@@ -78,6 +92,7 @@ namespace CRM_Project.Controllers
             customer.UserId = user.Id;
             customer.BuildingId = buildingId;
             customer.CreatedDate = DateTime.UtcNow;
+
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 
@@ -88,27 +103,30 @@ namespace CRM_Project.Controllers
                 FloorNumber = floorNumber,
                 CustomerId = customer.CustomerId
             });
+
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Customer registered successfully.";
+
             return RedirectToAction("Index");
         }
 
-        // ─── Create Employee ───────────────────────────────────────────────
+        // ---------------- CREATE EMPLOYEE PAGE ----------------
         [HttpGet]
         public async Task<IActionResult> CreateEmployee()
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
-            ViewBag.Buildings = new SelectList(await _context.Buildings.ToListAsync(), "BuildingId", "BuildingName");
+            ViewBag.Buildings = new SelectList(
+                await _context.Buildings.ToListAsync(),
+                "BuildingId",
+                "BuildingName");
+
             return View();
         }
 
+        // ---------------- CREATE EMPLOYEE ----------------
         [HttpPost]
         public async Task<IActionResult> CreateEmployee(Employee employee)
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
-
-            // Validate credentials
             if (string.IsNullOrWhiteSpace(employee.Username) || string.IsNullOrWhiteSpace(employee.Password))
             {
                 ViewBag.Error = "Username and password are required.";
@@ -116,9 +134,10 @@ namespace CRM_Project.Controllers
                 return View(employee);
             }
 
-            // Check for existing username in Users or Employees
-            bool usernameTaken = await _context.Users.AnyAsync(u => u.Username == employee.Username)
-                || await _context.Employees.AnyAsync(e => e.Username == employee.Username);
+            bool usernameTaken =
+                await _context.Users.AnyAsync(u => u.Username == employee.Username) ||
+                await _context.Employees.AnyAsync(e => e.Username == employee.Username);
+
             if (usernameTaken)
             {
                 ViewBag.Error = "Username already exists.";
@@ -126,31 +145,35 @@ namespace CRM_Project.Controllers
                 return View(employee);
             }
 
-            // Create corresponding User record
             var user = new User
             {
                 Username = employee.Username,
-                Password = employee.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(employee.Password),
                 Role = "Employee"
             };
+
             _context.Users.Add(user);
 
-            // Create employee record
             employee.Role = "Employee";
             employee.CreatedDate = DateTime.UtcNow;
+
             _context.Employees.Add(employee);
 
             await _context.SaveChangesAsync();
+
             TempData["Success"] = "Employee registered successfully.";
+
             return RedirectToAction("Index");
         }
 
-        // ─── Floor API ─────────────────────────────────────────────────────
+        // ---------------- FLOOR API ----------------
         [HttpGet]
         public async Task<IActionResult> GetAvailableFloors(int buildingId)
         {
             var building = await _context.Buildings.FindAsync(buildingId);
-            if (building == null) return Json(new List<int>());
+
+            if (building == null)
+                return Json(new List<int>());
 
             var assignedFloors = await _context.BuildingFloorCustomers
                 .Where(f => f.BuildingId == buildingId)
@@ -164,23 +187,25 @@ namespace CRM_Project.Controllers
             return Json(available);
         }
 
-        // ─── View Customers ────────────────────────────────────────────────
+        // ---------------- VIEW CUSTOMERS ----------------
         public async Task<IActionResult> Customers()
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
             var customers = await _context.Customers
                 .Include(c => c.User)
                 .Include(c => c.Building)
                 .Include(c => c.FloorAssignment)
                 .ToListAsync();
+
             return View(customers);
         }
 
-        // ─── View Employees ────────────────────────────────────────────────
+        // ---------------- VIEW EMPLOYEES ----------------
         public async Task<IActionResult> Employees()
         {
-            if (!IsOwner()) return RedirectToAction("Login", "Account");
-            var employees = await _context.Employees.Include(e => e.Building).ToListAsync();
+            var employees = await _context.Employees
+                .Include(e => e.Building)
+                .ToListAsync();
+
             return View(employees);
         }
     }
