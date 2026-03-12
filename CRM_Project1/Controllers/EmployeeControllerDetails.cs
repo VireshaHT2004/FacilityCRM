@@ -1,9 +1,12 @@
 using CRM_Project.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CRM_Project.Controllers
 {
+    [Authorize(Roles = "Employee")]
     public class EmployeeControllerDetails : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -13,13 +16,15 @@ namespace CRM_Project.Controllers
             _context = context;
         }
 
-        private bool IsEmployee() => HttpContext.Session.GetString("Role") == "Employee";
-
         public async Task<IActionResult> Index()
         {
-            if (!IsEmployee()) return RedirectToAction("Login", "Account");
+            // Get EmployeeId from JWT token
+            var userIdClaim = User.FindFirst("UserId");
 
-            int employeeId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userIdClaim == null)
+                return RedirectToAction("Login", "Account");
+
+            int employeeId = int.Parse(userIdClaim.Value);
 
             var employee = await _context.Employees
                 .Include(e => e.Building)
@@ -38,6 +43,7 @@ namespace CRM_Project.Controllers
 
             ViewBag.Employee = employee;
             ViewBag.Assignments = assignments;
+
             return View();
         }
     }

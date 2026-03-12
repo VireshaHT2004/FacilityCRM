@@ -1,9 +1,12 @@
 using CRM_Project.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CRM_Project.Controllers
 {
+    [Authorize(Roles = "Customer")]
     public class CustomerController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -13,20 +16,23 @@ namespace CRM_Project.Controllers
             _context = context;
         }
 
-        private bool IsCustomer() => HttpContext.Session.GetString("Role") == "Customer";
-
         public async Task<IActionResult> Index()
         {
-            if (!IsCustomer()) return RedirectToAction("Login", "Account");
+            // Get UserId from JWT token
+            var userIdClaim = User.FindFirst("UserId");
 
-            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (userIdClaim == null)
+                return RedirectToAction("Login", "Account");
+
+            int userId = int.Parse(userIdClaim.Value);
 
             var customer = await _context.Customers
                 .Include(c => c.Building)
                 .Include(c => c.FloorAssignment)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
 
-            if (customer == null) return RedirectToAction("Login", "Account");
+            if (customer == null)
+                return RedirectToAction("Login", "Account");
 
             var requests = await _context.CustomerServiceRequests
                 .Include(r => r.Service)
@@ -37,6 +43,7 @@ namespace CRM_Project.Controllers
 
             ViewBag.Customer = customer;
             ViewBag.Requests = requests;
+
             return View();
         }
     }

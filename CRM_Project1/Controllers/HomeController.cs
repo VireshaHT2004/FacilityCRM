@@ -1,8 +1,9 @@
+using CRM_Project.Models;
 using CRM_Project1.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace CRM_Project1.Controllers
+namespace CRM_Project.Controllers
 {
     public class HomeController : Controller
     {
@@ -19,7 +20,10 @@ namespace CRM_Project1.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
         }
     }
 }
