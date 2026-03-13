@@ -69,13 +69,13 @@
                             <td>@b.CreatedDate.ToString("MM/dd/yyyy")</td>
                             <td>
                                 <a href="/Admin/EditBuilding/@b.BuildingId" class="btn btn-sm btn-outline-warning">
-                                    <i class="bi bi-pencil"></i>
+                                    <i class="bi bi-pencil">Edit</i>
                                 </a>
                                 <form method="post" action="/Admin/DeleteBuilding" class="d-inline"
                                       onsubmit="return confirm('Delete this building?')">
                                     <input type="hidden" name="id" value="@b.BuildingId" />
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i>
+                                        <i class="bi bi-trash">Delete</i>
                                     </button>
                                 </form>
                             </td>

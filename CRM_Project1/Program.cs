@@ -110,13 +110,9 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-<<<<<<< HEAD
-    context.Database.EnsureCreated();   
-=======
 
     context.Database.EnsureCreated();
 
->>>>>>> f24b020e4e2029919e88c8ac391e0271e1e72011
     DbSeeder.Seed(context);
 }
 
