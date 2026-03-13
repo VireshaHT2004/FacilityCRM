@@ -46,17 +46,17 @@
                                 <div class="d-flex gap-1 justify-content-center">
                                     <a href="/BuildingOwner/CustomerDetails/@c.CustomerId"
                                        class="btn btn-sm btn-outline-info" title="View Details">
-                                        <i class="bi bi-eye"></i>
+                                        <i class="bi bi-eye">View</i>
                                     </a>
                                     <a href="/BuildingOwner/EditCustomer/@c.CustomerId"
                                        class="btn btn-sm btn-outline-warning" title="Edit">
-                                        <i class="bi bi-pencil"></i>
+                                        <i class="bi bi-pencil">Edit</i>
                                     </a>
                                     <form method="post" action="/BuildingOwner/DeleteCustomer"
                                           onsubmit="return confirm('Delete @c.FirstName @c.LastName? This will also delete their login account.')">
                                         <input type="hidden" name="id" value="@c.CustomerId" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
+                                            <i class="bi bi-trash">Delete</i>
                                         </button>
                                     </form>
                                 </div>

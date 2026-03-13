@@ -20,11 +20,18 @@ namespace CRM_Project.Controllers
         // ---------------- ASSIGNED SERVICES ----------------
         public async Task<IActionResult> AssignedServices()
         {
-            var userIdClaim = User.FindFirst("UserId");
-            if (userIdClaim == null)
+            var username = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(username))
                 return RedirectToAction("Login", "Account");
 
-            int employeeId = int.Parse(userIdClaim.Value);
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.Username == username);
+
+            if (employee == null)
+                return Unauthorized();
+
+            int employeeId = employee.EmployeeId;
 
             var assignments = await _context.ServiceAssignments
                 .Include(a => a.Request)
@@ -85,6 +92,7 @@ namespace CRM_Project.Controllers
             var request = await _context.CustomerServiceRequests
                 .Include(r => r.Service)
                 .Include(r => r.Customer)
+                .Include(r => r.Building)
                 .FirstOrDefaultAsync(r => r.RequestId == requestId);
 
             if (request == null)
@@ -105,11 +113,18 @@ namespace CRM_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateServiceStatus(int requestId, string workStatus, string notes)
         {
-            var userIdClaim = User.FindFirst("UserId");
-            if (userIdClaim == null)
+            var username = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(username))
                 return RedirectToAction("Login", "Account");
 
-            int employeeId = int.Parse(userIdClaim.Value);
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.Username == username);
+
+            if (employee == null)
+                return Unauthorized();
+
+            int employeeId = employee.EmployeeId;
 
             var request = await _context.CustomerServiceRequests.FindAsync(requestId);
             if (request == null)
@@ -128,21 +143,20 @@ namespace CRM_Project.Controllers
             if (workStatus == "Completed")
                 request.CompletedDate = DateTime.UtcNow;
 
-            _context.CustomerServiceRequests.Update(request);
-
             _context.ServiceWorkUpdates.Add(new ServiceWorkUpdate
             {
                 RequestId = requestId,
                 EmployeeId = employeeId,
                 WorkStatus = workStatus,
                 UpdateTime = DateTime.UtcNow,
-                Notes = notes
+                Notes = string.IsNullOrWhiteSpace(notes) ? "" : notes
             });
 
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Status updated successfully.";
-            return RedirectToAction("AssignedServices");
+
+            return RedirectToAction("Index", "EmployeeControllerDetails");
         }
     }
 }

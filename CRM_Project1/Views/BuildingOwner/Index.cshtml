@@ -1,17 +1,26 @@
 @{
     ViewData["Title"] = "Building Owner Dashboard";
+
     var customers = ViewBag.Customers as List<CRM_Project.Models.Customer> ?? new();
     var employees = ViewBag.Employees as List<CRM_Project.Models.Employee> ?? new();
     var recentRequests = ViewBag.RecentRequests as List<CRM_Project.Models.CustomerServiceRequest> ?? new();
 }
 
 <div class="page-header">
-    <h3><i class="bi bi-speedometer2 text-success me-2"></i>Building Owner Dashboard</h3>
-    <p class="text-muted mb-0">Welcome, @Context.Session.GetString("Username")</p>
+    <h3>
+        <i class="bi bi-speedometer2 text-success me-2"></i>
+        Building Owner Dashboard
+    </h3>
+
+    <!-- JWT username -->
+    <p class="text-muted">Welcome, @User.Identity?.Name</p>
 </div>
 
-@* ── STAT CARDS ───────────────────────────────────────────────*@
+
+<!-- STATISTICS CARDS -->
+
 <div class="row g-3 mb-4">
+
     <div class="col-md-3">
         <div class="card stat-card border-success p-3">
             <div class="d-flex align-items-center">
@@ -19,10 +28,13 @@
                     <div class="text-muted small">Customers</div>
                     <div class="fs-2 fw-bold text-success">@customers.Count</div>
                 </div>
+
                 <i class="bi bi-people fs-1 text-success opacity-25"></i>
             </div>
         </div>
     </div>
+
+
     <div class="col-md-3">
         <div class="card stat-card border-info p-3">
             <div class="d-flex align-items-center">
@@ -30,21 +42,29 @@
                     <div class="text-muted small">Employees</div>
                     <div class="fs-2 fw-bold text-info">@employees.Count</div>
                 </div>
+
                 <i class="bi bi-person-workspace fs-1 text-info opacity-25"></i>
             </div>
         </div>
     </div>
+
+
     <div class="col-md-3">
         <div class="card stat-card border-warning p-3">
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <div class="text-muted small">Pending Requests</div>
-                    <div class="fs-2 fw-bold text-warning">@recentRequests.Count(r => r.Status == "Pending")</div>
+                    <div class="fs-2 fw-bold text-warning">
+                        @recentRequests.Count(r => r.Status == "Pending")
+                    </div>
                 </div>
+
                 <i class="bi bi-hourglass-split fs-1 text-warning opacity-25"></i>
             </div>
         </div>
     </div>
+
+
     <div class="col-md-3">
         <div class="card stat-card border-danger p-3">
             <div class="d-flex align-items-center">
@@ -52,183 +72,89 @@
                     <div class="text-muted small">Total Requests</div>
                     <div class="fs-2 fw-bold text-danger">@recentRequests.Count</div>
                 </div>
+
                 <i class="bi bi-clipboard-check fs-1 text-danger opacity-25"></i>
             </div>
         </div>
     </div>
+
 </div>
 
-@* ── QUICK ACTION BUTTONS ──────────────────────────────────────*@
+
+<!-- ACTION BUTTONS -->
+
 <div class="row g-3 mb-4">
+
     <div class="col-md-4">
-        <a href="/BuildingOwner/CreateCustomer" class="btn btn-success w-100 py-3">
-            <i class="bi bi-person-plus fs-4 d-block mb-1"></i>Register Customer
+        <a href="/BuildingOwner/Customers"
+               class="btn btn-success w-100 py-3">
+
+            <i class="bi bi-person-plus fs-4 d-block mb-1"></i>
+
+            Customers
         </a>
     </div>
+
+
     <div class="col-md-4">
-        <a href="/BuildingOwner/CreateEmployee" class="btn btn-info w-100 py-3 text-white">
-            <i class="bi bi-person-badge fs-4 d-block mb-1"></i>Register Employee
+        <a href="/BuildingOwner/CreateCustomer"
+           class="btn btn-success w-100 py-3">
+
+            <i class="bi bi-person-plus fs-4 d-block mb-1"></i>
+
+            Register Customer
         </a>
     </div>
+
     <div class="col-md-4">
-        <a href="/OwnerService/ServiceRequests" class="btn btn-warning w-100 py-3 text-dark">
-            <i class="bi bi-clipboard-check fs-4 d-block mb-1"></i>Service Requests
+        <a href="/BuildingOwner/Employees"
+               class="btn btn-success w-100 py-3">
+
+            <i class="bi bi-person-plus fs-4 d-block mb-1"></i>
+
+            Employees
         </a>
     </div>
+
+
+    <div class="col-md-4">
+        <a href="/BuildingOwner/CreateEmployee"
+           class="btn btn-info w-100 py-3 text-white">
+
+            <i class="bi bi-person-badge fs-4 d-block mb-1"></i>
+
+            Register Employee
+        </a>
+    </div>
+
+
+    <div class="col-md-4">
+        <a href="/OwnerService/ServiceRequests"
+           class="btn btn-warning w-100 py-3 text-dark">
+
+            <i class="bi bi-clipboard-check fs-4 d-block mb-1"></i>
+
+            Service Requests
+        </a>
+    </div>
+
 </div>
 
-@* ── CUSTOMERS TABLE ───────────────────────────────────────────*@
-<div class="card mb-4">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-        <h6 class="mb-0 fw-bold"><i class="bi bi-people text-success me-2"></i>Customers</h6>
-        <a href="/BuildingOwner/CreateCustomer" class="btn btn-sm btn-success">
-            <i class="bi bi-person-plus me-1"></i>Add Customer
-        </a>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Name</th>
-                        <th>Title</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Building</th>
-                        <th>Floor</th>
-                        <th>Joined</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var c in customers)
-                    {
-                        <tr>
-                            <td><strong>@c.FirstName @c.LastName</strong></td>
-                            <td>@c.Title</td>
-                            <td>@c.Email</td>
-                            <td>@c.PhoneNumber</td>
-                            <td>@c.Building?.BuildingName</td>
-                            <td>
-                                @if (c.FloorAssignment != null)
-                                {
-                                    <span class="badge bg-primary">Floor @c.FloorAssignment.FloorNumber</span>
-                                }
-                            </td>
-                            <td>@c.CreatedDate.ToString("MM/dd/yyyy")</td>
-                            <td class="text-center">
-                                <div class="d-flex gap-1 justify-content-center">
-                                    <a href="/BuildingOwner/CustomerDetails/@c.CustomerId"
-                                           class="btn btn-sm btn-outline-info" title="View Details">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="/BuildingOwner/EditCustomer/@c.CustomerId"
-                                           class="btn btn-sm btn-outline-warning" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form method="post" action="/BuildingOwner/DeleteCustomer"
-                                          onsubmit="return confirm('Delete @c.FirstName @c.LastName? This will also delete their login account.')">
-                                        <input type="hidden" name="id" value="@c.CustomerId" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                    @if (!customers.Any())
-                    {
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                No customers registered yet.
-                                <a href="/BuildingOwner/CreateCustomer">Register one now</a>.
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
 
-@* ── EMPLOYEES TABLE ───────────────────────────────────────────*@
-<div class="card mb-4">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-        <h6 class="mb-0 fw-bold"><i class="bi bi-person-workspace text-info me-2"></i>Employees</h6>
-        <a href="/BuildingOwner/CreateEmployee" class="btn btn-sm btn-info text-white">
-            <i class="bi bi-person-badge me-1"></i>Add Employee
-        </a>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Name</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Building</th>
-                        <th>Joined</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var e in employees)
-                    {
-                        <tr>
-                            <td><strong>@e.FirstName @e.LastName</strong></td>
-                            <td><code>@e.Username</code></td>
-                            <td>@e.Email</td>
-                            <td>@e.Phone</td>
-                            <td>@e.Building?.BuildingName</td>
-                            <td>@e.CreatedDate.ToString("MM/dd/yyyy")</td>
-                            <td class="text-center">
-                                <div class="d-flex gap-1 justify-content-center">
-                                    <a href="/BuildingOwner/EmployeeDetails/@e.EmployeeId"
-                                           class="btn btn-sm btn-outline-info" title="View Details">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="/BuildingOwner/EditEmployee/@e.EmployeeId"
-                                           class="btn btn-sm btn-outline-warning" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form method="post" action="/BuildingOwner/DeleteEmployee"
-                                          onsubmit="return confirm('Delete employee @e.FirstName @e.LastName?')">
-                                        <input type="hidden" name="id" value="@e.EmployeeId" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                    @if (!employees.Any())
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                No employees registered yet.
-                                <a href="/BuildingOwner/CreateEmployee">Register one now</a>.
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+<!-- RECENT REQUEST TABLE -->
 
-@* ── RECENT SERVICE REQUESTS TABLE ───────────────────────────────*@
 <div class="card">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-        <h6 class="mb-0 fw-bold"><i class="bi bi-clipboard-check text-warning me-2"></i>Recent Service Requests</h6>
-        <a href="/OwnerService/ServiceRequests" class="btn btn-sm btn-warning text-dark">View All</a>
+
+    <div class="card-header bg-white">
+        <h6 class="mb-0 fw-bold">Recent Service Requests</h6>
     </div>
+
     <div class="card-body p-0">
+
         <div class="table-responsive">
+
             <table class="table table-hover mb-0">
+
                 <thead class="table-light">
                     <tr>
                         <th>#</th>
@@ -240,34 +166,72 @@
                         <th>Action</th>
                     </tr>
                 </thead>
+
                 <tbody>
+
                     @foreach (var r in recentRequests)
                     {
                         <tr>
+
                             <td>#@r.RequestId</td>
-                            <td>@r.Customer?.FirstName @r.Customer?.LastName</td>
-                            <td>@r.Service?.ServiceName</td>
-                            <td><span class="priority-@r.Priority">@r.Priority</span></td>
-                            <td><span class="badge badge-status-@r.Status text-white">@r.Status</span></td>
-                            <td>@r.RequestDate.ToString("MM/dd/yyyy")</td>
+
                             <td>
+                                @r.Customer?.FirstName
+                                @r.Customer?.LastName
+                            </td>
+
+                            <td>@r.Service?.ServiceName</td>
+
+                            <td>
+                                <span class="priority-@r.Priority">
+                                    @r.Priority
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge badge-status-@r.Status">
+                                    @r.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                @r.RequestDate.ToString("MM/dd/yyyy")
+                            </td>
+
+                            <td>
+
                                 @if (r.Status == "Pending")
                                 {
-                                    <a href="/OwnerService/AssignService/@r.RequestId" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-person-check me-1"></i>Assign
+                                    <a href="/OwnerService/AssignService/@r.RequestId"
+                                       class="btn btn-sm btn-primary">
+
+                                        Assign
                                     </a>
                                 }
+
                             </td>
+
                         </tr>
                     }
+
                     @if (!recentRequests.Any())
                     {
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">No service requests yet.</td>
+                            <td colspan="7"
+                                class="text-center text-muted py-4">
+
+                                No service requests yet.
+
+                            </td>
                         </tr>
                     }
+
                 </tbody>
+
             </table>
+
         </div>
+
     </div>
+
 </div>

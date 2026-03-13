@@ -39,17 +39,17 @@
                                 <div class="d-flex gap-1 justify-content-center">
                                     <a href="/BuildingOwner/EmployeeDetails/@e.EmployeeId"
                                        class="btn btn-sm btn-outline-info" title="View Details">
-                                        <i class="bi bi-eye"></i>
+                                        <i class="bi bi-eye">View</i>
                                     </a>
                                     <a href="/BuildingOwner/EditEmployee/@e.EmployeeId"
                                        class="btn btn-sm btn-outline-warning" title="Edit">
-                                        <i class="bi bi-pencil"></i>
+                                        <i class="bi bi-pencil">Edit</i>
                                     </a>
                                     <form method="post" action="/BuildingOwner/DeleteEmployee"
                                           onsubmit="return confirm('Delete employee @e.FirstName @e.LastName?')">
                                         <input type="hidden" name="id" value="@e.EmployeeId" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
+                                            <i class="bi bi-trash">Delete</i>
                                         </button>
                                     </form>
                                 </div>
