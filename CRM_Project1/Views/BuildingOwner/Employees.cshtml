@@ -22,6 +22,7 @@
                         <th>Phone</th>
                         <th>Building</th>
                         <th>Joined</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,11 +35,32 @@
                             <td>@e.Phone</td>
                             <td>@e.Building?.BuildingName</td>
                             <td>@e.CreatedDate.ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <a href="/BuildingOwner/EmployeeDetails/@e.EmployeeId"
+                                       class="btn btn-sm btn-outline-info" title="View Details">
+                                        <i class="bi bi-eye">View</i>
+                                    </a>
+                                    <a href="/BuildingOwner/EditEmployee/@e.EmployeeId"
+                                       class="btn btn-sm btn-outline-warning" title="Edit">
+                                        <i class="bi bi-pencil">Edit</i>
+                                    </a>
+                                    <form method="post" action="/BuildingOwner/DeleteEmployee"
+                                          onsubmit="return confirm('Delete employee @e.FirstName @e.LastName?')">
+                                        <input type="hidden" name="id" value="@e.EmployeeId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash">Delete</i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     }
                     @if (!Model.Any())
                     {
-                        <tr><td colspan="6" class="text-center text-muted py-4">No employees registered yet.</td></tr>
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No employees registered yet.</td>
+                        </tr>
                     }
                 </tbody>
             </table>

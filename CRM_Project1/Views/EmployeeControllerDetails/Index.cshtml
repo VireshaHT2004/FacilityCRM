@@ -10,30 +10,41 @@
 </div>
 
 <div class="row g-3 mb-4">
+
     <div class="col-md-3">
         <div class="card p-3 stat-card border-info">
             <div class="text-muted small">Total Assigned</div>
             <div class="fs-2 fw-bold text-info">@assignments.Count</div>
         </div>
     </div>
+
     <div class="col-md-3">
         <div class="card p-3 stat-card border-warning">
             <div class="text-muted small">Pending Response</div>
-            <div class="fs-2 fw-bold text-warning">@assignments.Count(a => a.EmployeeStatus == "Pending")</div>
+            <div class="fs-2 fw-bold text-warning">
+                @assignments.Count(a => a.EmployeeStatus == "Pending")
+            </div>
         </div>
     </div>
+
     <div class="col-md-3">
         <div class="card p-3 stat-card border-success">
             <div class="text-muted small">Accepted</div>
-            <div class="fs-2 fw-bold text-success">@assignments.Count(a => a.EmployeeStatus == "Accepted")</div>
+            <div class="fs-2 fw-bold text-success">
+                @assignments.Count(a => a.EmployeeStatus == "Accepted")
+            </div>
         </div>
     </div>
+
     <div class="col-md-3">
         <div class="card p-3 stat-card border-primary">
             <div class="text-muted small">Building</div>
-            <div class="fw-bold text-primary small mt-1">@employee?.Building?.BuildingName</div>
+            <div class="fw-bold text-primary small mt-1">
+                @employee?.Building?.BuildingName
+            </div>
         </div>
     </div>
+
 </div>
 
 <div class="d-flex mb-3">
@@ -43,12 +54,17 @@
 </div>
 
 <div class="card">
+
     <div class="card-header bg-white">
         <h6 class="mb-0 fw-bold">Recent Assignments</h6>
     </div>
+
     <div class="card-body p-0">
+
         <div class="table-responsive">
+
             <table class="table table-hover mb-0">
+
                 <thead class="table-light">
                     <tr>
                         <th>Request #</th>
@@ -61,22 +77,52 @@
                         <th>Action</th>
                     </tr>
                 </thead>
+
                 <tbody>
+
                     @foreach (var a in assignments.Take(10))
                     {
+                        var latestUpdate = a.Request?.WorkUpdates?
+                            .OrderByDescending(w => w.UpdateTime)
+                            .FirstOrDefault();
+
                         <tr>
+
                             <td>#@a.RequestId</td>
+
                             <td>@a.Request?.Service?.ServiceName</td>
-                            <td>@a.Request?.Customer?.FirstName @a.Request?.Customer?.LastName</td>
-                            <td>@a.Request?.Building?.BuildingName / Floor @a.Request?.FloorNumber</td>
-                            <td><span class="priority-@a.Request?.Priority">@a.Request?.Priority</span></td>
-                            <td><span class="badge badge-status-@a.Request?.Status text-white">@a.Request?.Status</span></td>
+
                             <td>
-                                <span class="badge @(a.EmployeeStatus == "Accepted" ? "bg-success" : a.EmployeeStatus == "Rejected" ? "bg-danger" : "bg-secondary")">
+                                @a.Request?.Customer?.FirstName
+                                @a.Request?.Customer?.LastName
+                            </td>
+
+                            <td>
+                                @a.Request?.Building?.BuildingName /
+                                Floor @a.Request?.FloorNumber
+                            </td>
+
+                            <td>
+                                <span class="priority-@a.Request?.Priority">
+                                    @a.Request?.Priority
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-primary">
+                                    @(latestUpdate?.WorkStatus ?? a.Request?.Status)
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge @(a.EmployeeStatus == "Accepted" ? "bg-success" :
+                                                                                                                      a.EmployeeStatus == "Rejected" ? "bg-danger" : "bg-secondary")">
                                     @a.EmployeeStatus
                                 </span>
                             </td>
+
                             <td>
+
                                 @if (a.EmployeeStatus == "Pending")
                                 {
                                     <form method="post" action="/EmployeeService/RespondToAssignment" class="d-inline">
@@ -84,6 +130,7 @@
                                         <input type="hidden" name="response" value="Accepted" />
                                         <button class="btn btn-sm btn-success">Accept</button>
                                     </form>
+
                                     <form method="post" action="/EmployeeService/RespondToAssignment" class="d-inline ms-1">
                                         <input type="hidden" name="assignmentId" value="@a.AssignmentId" />
                                         <input type="hidden" name="response" value="Rejected" />
@@ -92,17 +139,32 @@
                                 }
                                 @if (a.EmployeeStatus == "Accepted")
                                 {
-                                    <a href="/EmployeeService/UpdateServiceStatus/@a.RequestId" class="btn btn-sm btn-outline-primary">Update</a>
+                                    <a href="/EmployeeService/UpdateServiceStatus?requestId=@a.RequestId"
+                                           class="btn btn-sm btn-outline-primary">
+                                        Update
+                                    </a>
                                 }
+
+                            </td>
+
+                        </tr>
+                    }
+
+                    @if (!assignments.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                No assignments yet.
                             </td>
                         </tr>
                     }
-                    @if (!assignments.Any())
-                    {
-                        <tr><td colspan="8" class="text-center py-4 text-muted">No assignments yet.</td></tr>
-                    }
+
                 </tbody>
+
             </table>
+
         </div>
+
     </div>
+
 </div>

@@ -48,8 +48,8 @@ namespace CRM_Project.Controllers
             if (!ModelState.IsValid)
                 return View(building);
 
-            building.CreatedDate = DateTime.UtcNow;
-
+             building.CreatedDate = DateTime.UtcNow;
+            
             _context.Buildings.Add(building);
             await _context.SaveChangesAsync();
 
@@ -96,7 +96,7 @@ namespace CRM_Project.Controllers
         {
             if (!ModelState.IsValid)
                 return View(building);
-
+            building.CreatedDate = DateTime.SpecifyKind(building.CreatedDate, DateTimeKind.Utc);
             _context.Buildings.Update(building);
             await _context.SaveChangesAsync();
 

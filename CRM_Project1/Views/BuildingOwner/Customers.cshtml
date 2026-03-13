@@ -23,6 +23,7 @@
                         <th>Building</th>
                         <th>Floor</th>
                         <th>Joined</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,11 +42,32 @@
                                 }
                             </td>
                             <td>@c.CreatedDate.ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <a href="/BuildingOwner/CustomerDetails/@c.CustomerId"
+                                       class="btn btn-sm btn-outline-info" title="View Details">
+                                        <i class="bi bi-eye">View</i>
+                                    </a>
+                                    <a href="/BuildingOwner/EditCustomer/@c.CustomerId"
+                                       class="btn btn-sm btn-outline-warning" title="Edit">
+                                        <i class="bi bi-pencil">Edit</i>
+                                    </a>
+                                    <form method="post" action="/BuildingOwner/DeleteCustomer"
+                                          onsubmit="return confirm('Delete @c.FirstName @c.LastName? This will also delete their login account.')">
+                                        <input type="hidden" name="id" value="@c.CustomerId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash">Delete</i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     }
                     @if (!Model.Any())
                     {
-                        <tr><td colspan="7" class="text-center text-muted py-4">No customers registered yet.</td></tr>
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">No customers registered yet.</td>
+                        </tr>
                     }
                 </tbody>
             </table>

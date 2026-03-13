@@ -1,0 +1,114 @@
+@model CRM_Project.Models.Employee
+@{
+    ViewData["Title"] = "Edit Employee";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h3 class="mb-0"><i class="bi bi-pencil-square text-warning me-2"></i>Edit Employee</h3>
+        <p class="text-muted mb-0">Update employee information</p>
+    </div>
+    <a href="/BuildingOwner/Employees" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0 fw-bold">
+                    Editing: @Model.FirstName @Model.LastName
+                    <span class="badge bg-dark ms-2">ID #@Model.EmployeeId</span>
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/BuildingOwner/EditEmployee">
+                    <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+
+                    <h6 class="text-muted mb-3">Personal Information</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">First Name *</label>
+                            <input name="firstName" class="form-control" value="@Model.FirstName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Last Name *</label>
+                            <input name="lastName" class="form-control" value="@Model.LastName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input name="email" class="form-control" type="email" value="@Model.Email" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone</label>
+                            <input name="phone" class="form-control" value="@Model.Phone" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Assigned Building *</label>
+                            @{
+                                var buildings = ViewBag.Buildings as Microsoft.AspNetCore.Mvc.Rendering.SelectList
+                                    ?? new Microsoft.AspNetCore.Mvc.Rendering.SelectList(new List<object>());
+                            }
+                            <select name="buildingId" class="form-select" required>
+                                @foreach (var item in buildings)
+                                {
+                                    if (item.Selected)
+                                    {
+                                        <option value="@item.Value" selected="selected">@item.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+                    <h6 class="text-muted mb-1">Change Password</h6>
+                    <p class="text-muted small mb-3">Leave blank to keep the current password.</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">New Password</label>
+                            <input name="newPassword" class="form-control" type="password" placeholder="Enter new password" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-warning px-4">
+                            <i class="bi bi-save me-1"></i>Save Changes
+                        </button>
+                        <a href="/BuildingOwner/EmployeeDetails/@Model.EmployeeId" class="btn btn-outline-info">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                        <a href="/BuildingOwner/Employees" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="bi bi-person-circle me-1"></i>Current Info</h6>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted small">Username</span>
+                    <code>@Model.Username</code>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted small">Building</span>
+                    <span>@Model.Building?.BuildingName</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted small">Registered</span>
+                    <span>@Model.CreatedDate.ToString("MMM dd, yyyy")</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
